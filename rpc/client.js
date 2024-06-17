@@ -22,6 +22,9 @@ try {
     client.on('end', () => {
         console.log('disconnected from server');
     });
-} catch {
-    console.log("socket connection was not established")
+    client.on('error', (err) => {
+        console.error('Error: ', err.message);
+    });
+} catch (error){
+    console.error("socket connection was not established", error.message)
 }
