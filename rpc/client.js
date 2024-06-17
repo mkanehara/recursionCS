@@ -23,5 +23,5 @@ try {
         console.log('disconnected from server');
     });
 } catch {
-
+    console.log("socket connection was not established")
 }
