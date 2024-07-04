@@ -12,7 +12,7 @@ class TcpConnection:
     # 最初の32バイトはヘッダー、ファイルのバイト数を通知
     # ファイルサイズは4GB(2^32バイト)が最大
     def handle_connection(self):
-        file_path = '/var/www/html/video_compressor_service/file/mov_hts-samp001.mp4'
+        file_path = '/var/www/html/video_compressor_service/stage1/file/mov_hts-samp001.mp4'
 
         # ファイルタイトルの確認
         # mp4ファイルかどうかのバリデーション
@@ -44,7 +44,8 @@ class TcpConnection:
         # サーバーからの返事を待ち受ける
         receive = self.sock.recv(32)
         print(receive)
-    
+
+        self.sock.close()
 
 if __name__ == "__main__":
     tcp_connection = TcpConnection()

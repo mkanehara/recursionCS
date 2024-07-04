@@ -1,5 +1,6 @@
 import socket
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 class TcpConnection:
     def __init__(self):
@@ -7,6 +8,7 @@ class TcpConnection:
         self.server_address = '0.0.0.0'
         self.server_port = 9001
         self.dpath = "received_file"
+        self.executor = ThreadPoolExecutor(max_workers=5)
         self.sock.bind((self.server_address, self.server_port))
         self.sock.listen()
         self.check_folder()
@@ -16,9 +18,8 @@ class TcpConnection:
         if not os.path.exists(self.dpath):
             os.makedirs(self.dpath)
     
-    def handle_connection(self):
-        while True:
-            connection, address = self.sock.accept()
+    def handle_connection(self, connection, address):
+        try:
             print('connection: {}'.format(connection))
             print('address: {}'.format(address))
 
@@ -35,11 +36,17 @@ class TcpConnection:
             
             response = 'mp4 file was received!'
             connection.sendall(response.encode('utf-8'))
-            break
+        except Exception as e:
+            print('error handling for address: {}: {}'.format(address, e))
+        finally:
+            connection.close()
 
-        connection.close()
+    def start(self):
+        while True:
+            connection, address = self.sock.accept()
+            self.executor.submit(self.handle_connection, connection, address)
 
 
 if __name__ == "__main__":
     tcp_connection = TcpConnection()
-    tcp_connection.handle_connection()
+    tcp_connection.start()
