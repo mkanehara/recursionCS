@@ -10,6 +10,7 @@ class TcpConnection:
         self.server_port = 9001
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.stream_rate = 1024
+        self.processing = True
     
     def show_options(self):
         options = {
@@ -111,11 +112,18 @@ class TcpConnection:
                 print('Sending {}'.format(data))
                 self.sock.send(data)
                 data = f.read(1400)
+        
+        while self.processing:
+            try:
+                # 1分毎にステータスのチェックを行う
+                self.sock.settimeout(60)
+                # サーバーからの返事を待ち受ける
+                receive_header = self.sock.recv(8)
+                self.processing = False
+            except socket.timeout as e:
+                print('now processing....')
+                continue
 
-        # サーバーからの返事を待ち受ける
-        test_b = "test".encode('utf-8')
-        self.sock.send(test_b)
-        receive_header = self.sock.recv(8)
         receive_json_size = int.from_bytes(receive_header[:2], 'big')
         receive_mediatype_size = int.from_bytes(receive_header[2:3], "big")
         receive_payload_size = int.from_bytes(receive_header[3:], "big")
@@ -139,4 +147,3 @@ class TcpConnection:
 if __name__ == '__main__':
     tcp_connection = TcpConnection()
     tcp_connection.handle_connection()
-
